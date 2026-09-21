@@ -1,0 +1,22 @@
+# Build artifacts
+*.bit
+*.jou
+*.log
+*.dcp
+.Xil/
+*.cache/
+*.runs/
+*.sim/
+__pycache__/
+.ipynb_checkpoints/
+
+# Never commit credentials
+kaggle.json
+*.key
+*.pem
+.env
+
+# OS noise
+Thumbs.db
+desktop.ini
+.DS_Store
