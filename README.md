@@ -1,32 +1,63 @@
 # ucla-209-cache-bist
 
-Fully associative cache with CAM tag comparison and an LFSR/MISR BIST engine, taped out in 180nm CMOS. EC ENGR 209, UCLA. Hand-written RTL and testbenches only.
+A 32x128-bit fully associative cache with single-cycle CAM tag lookup and an
+LFSR/MISR built-in self-test (BIST) engine, taken from RTL to GDSII in 180nm
+CMOS and taped out — plus the FPGA tester and test PCB built to bring the chip
+up in the lab. UCLA EC ENGR 209AS/209BS (tapeout course sequence), 2026.
 
-## Contents
+## The chip
 
-```
-flow/mmmc_ori.tcl
-rtl/BIST_Controller.sv
-rtl/Cache.sv
-rtl/Cache_BIST_Top.sv
-rtl/Cache_BIST_Top_tb.sv
-rtl/Cache_tb.sv
-rtl/Chip.sv
-rtl/Chip_post_sim_tb.sv
-rtl/Chip_tb.sv
-rtl/P2S.sv
-rtl/S2P.sv
-rtl/TPG.sv
-rtl/TPG_tb.sv
-rtl/bidirectional_P2S_S2P.sv
-rtl/bidirectional_P2S_S2P_tb.sv
-```
+| Block | File | What it does |
+|---|---|---|
+| Cache | `rtl/Cache.sv` | 32 entries x 128-bit data; a CAM priority engine compares every tag in parallel in one cycle |
+| BIST controller | `rtl/BIST_Controller.sv` | FSM that sequences write and compare phases over the whole array |
+| Test-pattern generator | `rtl/TPG.sv` | LFSR producing pseudo-random write data and addresses |
+| Response compactor | `rtl/MISR.sv` | 129-bit multiple-input signature register; the final signature is the pass/fail check |
+| Serial I/O | `rtl/P2S.sv`, `rtl/S2P.sv`, `rtl/bidirectional_P2S_S2P.sv` | Moves 128-bit words through the pin-limited pad frame |
+| Top | `rtl/Cache_BIST_Top.sv`, `rtl/Chip.sv` | Integration and pad-level top |
+
+**Verification.** Unit- and chip-level SystemVerilog testbenches (`*_tb.sv`)
+with randomized address/data stimulus, plus `Chip_post_sim_tb.sv`, a
+post-layout gate-level simulation back-annotated with SDF from Innovus.
+
+**Implementation.** Hammer-driven Genus synthesis and Innovus place and route
+(MMMC setup in `flow/mmmc_ori.tcl`), DRC/LVS, and post-layout parasitic
+extraction before tapeout sign-off.
+
+## The tester (`tester/`)
+
+Silicon validation runs on a Xilinx Zynq board (PYNQ-Z2, `xc7z020clg400-1`).
+
+- **`bus_sequencer.sv`** — 14-state FSM that owns the DUT clock and all
+  protocol timing: reset, RUN_BIST, write, compare, and read with bus
+  turnaround for the bidirectional data pins. It runs *in the DUT clock
+  domain*, so read/write transactions stay cycle-accurate at any test
+  frequency, up to the 95 MHz MMCM clock.
+- **`tester_top.sv`** — clocking and transport: a 95 MHz MMCM and a
+  programmable divider switched glitch-free by a BUFGMUX, the DUT clock
+  forwarded off-chip through an ODDR, IOBUFs for the bidirectional bus, and
+  synchronizers on the clock-domain crossings of the register interface.
+- **`register_map.md`** — the PC-to-FPGA register contract (CTRL, STATUS,
+  CLKDIV, ADDR, WDATA0-3, RDATA0-3, ...).
+- **`TEST_PROCEDURE.md`** — step-by-step bring-up, first against a chip
+  emulator, then against silicon with the same bitstream and commands.
+- `tester_top.xdc`, `xdc/chip_emulator.xdc`, `stage1.tcl` — pin constraints and
+  Vivado build script.
+
+See `tester/README.md` for build instructions.
+
+## The test PCB (`pcb/`)
+
+KiCad project for the chip carrier board: SN74AVC/SN74AVCH level shifters
+between the chip's I/O and the FPGA, coaxial clock connectors, decoupling, and
+headers to the PYNQ-Z2. Team design (course group 12).
 
 ## Not included
 
-- Chip_ckt.v (Innovus post-layout netlist -- instantiates TSMC BWP7T standard cells; PDK-derived)
-- TSMC180nm Setup and Layout Tutorial.pdf, UCLA-32-Pin-Pad-Frame_2026.pdf, TapeoutChecklist_2026.pdf, 209Info_2026.pdf and the other course PDFs (foundry NDA / instructor material)
-- rtl.zip (duplicate of rtl/)
+- `Chip_ckt.v` — Innovus post-layout netlist; it instantiates TSMC standard
+  cells (foundry PDK, NDA).
+- Course handouts, pad-frame and tapeout documents (instructor / foundry material).
+- Generated build outputs (bitstreams, Vivado runs).
 
 ---
 
