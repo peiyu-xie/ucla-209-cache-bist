@@ -2,8 +2,8 @@
 
 A 32x128-bit fully associative cache with single-cycle CAM tag lookup and an
 LFSR/MISR built-in self-test (BIST) engine, taken from RTL to GDSII in 180nm
-CMOS and taped out — plus the FPGA tester and test PCB built to bring the chip
-up in the lab. UCLA EC ENGR 209AS/209BS (tapeout course sequence), 2026.
+CMOS and taped out — plus the FPGA tester built to bring the chip up in the
+lab. UCLA EC ENGR 209AS/209BS (tapeout course sequence), 2026.
 
 ## The chip
 
@@ -46,17 +46,13 @@ Silicon validation runs on a Xilinx Zynq board (PYNQ-Z2, `xc7z020clg400-1`).
 
 See `tester/README.md` for build instructions.
 
-## The test PCB (`pcb/`)
-
-KiCad project for the chip carrier board: SN74AVC/SN74AVCH level shifters
-between the chip's I/O and the FPGA, coaxial clock connectors, decoupling, and
-headers to the PYNQ-Z2. Team design (course group 12).
-
 ## Not included
 
 - `Chip_ckt.v` — Innovus post-layout netlist; it instantiates TSMC standard
   cells (foundry PDK, NDA).
 - Course handouts, pad-frame and tapeout documents (instructor / foundry material).
+- The chip carrier PCB, which my project partner designed; the tester drives
+  its level shifters through `shifter_oe_n` / `shifter_dir`.
 - Generated build outputs (bitstreams, Vivado runs).
 
 ---

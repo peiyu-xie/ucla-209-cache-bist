@@ -1,5 +1,0 @@
-(fp_lib_table
-	(version 7)
-	(lib (name "EE209AS_2026") (type "KiCad") (uri "${KIPRJMOD}/EE209AS_2026.pretty") (options "") (descr ""))
-	(lib (name "My_Custom_Logos") (type "KiCad") (uri "${KIPRJMOD}/My_Custom_Logos.pretty") (options "") (descr ""))
-)
